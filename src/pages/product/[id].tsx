@@ -4,22 +4,42 @@ import { GetStaticPaths, GetStaticProps } from "next"
 import { useRouter } from "next/router"
 import Stripe from "stripe"
 import Image from 'next/image'
+import axios from "axios"
+import { useState } from "react"
 
-interface HomeProps {
+interface ProductProps {
     product: {
         id: string
         name: string
         imageUrl: string
         price: number
         description: string
+        defaultPriceId: string
     }
 }
 
-export default function Product({ product }: HomeProps) {
+export default function Product({ product }: ProductProps) {
+    const [isCreatingCheckoutSession, setIsCreatingCheckoutSession] = useState(false)
     const { isFallback } = useRouter()
 
     if (isFallback) {
         return <p>Loading...</p>
+    }
+
+    async function handleBuyProduct() {
+        try {
+            setIsCreatingCheckoutSession(true)
+            const response = await axios.post('/api/checkout', {
+                priceId: product.defaultPriceId
+            })
+
+            const { checkoutUrl } = response.data
+
+            window.location.href = checkoutUrl //rota externa 
+        } catch (error) {
+            setIsCreatingCheckoutSession(false)
+            alert('Falha ao redirecionar ao checkout!')
+        }
     }
 
     return (
@@ -34,13 +54,13 @@ export default function Product({ product }: HomeProps) {
                 <span>{product.price}</span>
 
                 <p>{product.description}</p>
-                <button>buy now</button>
+                <button disabled={isCreatingCheckoutSession} onClick={handleBuyProduct}>buy now</button>
             </ProductDetails>
         </ProductContainer>
     )
 }
 
-export const getStaticPaths: GetStaticPaths = async ({ }) => {
+export const getStaticPaths: GetStaticPaths = async () => {
     return {
         paths: [],
         fallback: true
@@ -67,6 +87,7 @@ export const getStaticProps: GetStaticProps<any, { id: string }> = async ({ para
                     currency: 'BRL'
                 }).format(price.unit_amount! / 100),
                 description: product.description,
+                defaultPriceId: price.id
             }
         },
         revalidate: 60 * 60 * 1 // 1 hours
