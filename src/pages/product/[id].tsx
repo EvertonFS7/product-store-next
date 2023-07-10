@@ -1,11 +1,12 @@
-import { stripe } from "@/lib/stripe"
-import { ImageContainer, ProductContainer, ProductDetails } from "@/styles/pages/product"
-import { GetStaticPaths, GetStaticProps } from "next"
-import { useRouter } from "next/router"
-import Stripe from "stripe"
-import Image from 'next/image'
-import axios from "axios"
-import { useState } from "react"
+import { stripe } from '@/lib/stripe';
+import { ImageContainer, ProductContainer, ProductDetails } from '@/styles/pages/product';
+import axios from 'axios';
+import { GetStaticPaths, GetStaticProps } from 'next';
+import Head from 'next/head';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
+import { useState } from 'react';
+import Stripe from 'stripe';
 
 interface ProductProps {
     product: {
@@ -43,20 +44,26 @@ export default function Product({ product }: ProductProps) {
     }
 
     return (
-        <ProductContainer>
-            <ImageContainer>
-                <Image src={product.imageUrl} width={520} height={480} alt="" />
-            </ImageContainer>
+        <>
+            <Head>
+                <title>{product.name} | Ignite Shop</title>
+            </Head>
+            <ProductContainer>
+                <ImageContainer>
+                    <Image src={product.imageUrl} width={520} height={480} alt="" />
+                </ImageContainer>
 
-            <ProductDetails>
-                <h1>{product.name}</h1>
+                <ProductDetails>
+                    <h1>{product.name}</h1>
 
-                <span>{product.price}</span>
+                    <span>{product.price}</span>
 
-                <p>{product.description}</p>
-                <button disabled={isCreatingCheckoutSession} onClick={handleBuyProduct}>buy now</button>
-            </ProductDetails>
-        </ProductContainer>
+                    <p>{product.description}</p>
+                    <button disabled={isCreatingCheckoutSession} onClick={handleBuyProduct}>buy now</button>
+                </ProductDetails>
+            </ProductContainer>
+        </>
+
     )
 }
 
